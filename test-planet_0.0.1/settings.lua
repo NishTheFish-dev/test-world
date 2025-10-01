@@ -1,0 +1,10 @@
+-- Example structure:
+-- data:extend({
+--   {
+--     type = "bool-setting",
+--     name = "planet-test-world-example",
+--     setting_type = "startup",
+--     default_value = true,
+--     order = "a"
+--   }
+-- })
