@@ -1,0 +1,8 @@
+require("prototypes.planet")
+require("prototypes.items")
+require("prototypes.fluids")
+require("prototypes.resources")
+require("prototypes.buildings")
+require("prototypes.recipes")
+require("prototypes.technology")
+require("prototypes.achievements")

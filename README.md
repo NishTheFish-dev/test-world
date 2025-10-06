@@ -1,2 +1,1 @@
-# Test Planet
 yeah this is for me to learn how to make planets :)

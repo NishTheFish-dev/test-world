@@ -1,0 +1,13 @@
+{
+  "name": "dulcia",
+  "version": "0.0.1",
+  "title": "🌐Dulcia",
+  "author": "NishTheFish",
+  "description": "A candy-themed planet with ore dissolution mechanics. Visit first for cheaper space platforms through crystalline sugar technology.",
+  "factorio_version": "2.0",
+  "dependencies": [
+    "base >= 2.0.0",
+    "space-age >= 2.0.0",
+    "PlanetsLib >= 1.3.0"
+  ]
+}
