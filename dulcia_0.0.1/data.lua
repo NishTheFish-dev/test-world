@@ -1,3 +1,4 @@
+require("prototypes.tiles")
 require("prototypes.planet")
 require("prototypes.items")
 require("prototypes.fluids")

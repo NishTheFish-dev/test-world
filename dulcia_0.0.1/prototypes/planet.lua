@@ -1,9 +1,20 @@
 local asteroid_util = require("__space-age__/prototypes/planet/asteroid-spawn-definitions")
+local dulcia_map_gen = require("prototypes/mapgen")
 local PlanetsLib = _G.PlanetsLib
 if not PlanetsLib then
   require("__PlanetsLib__/api")
   PlanetsLib = _G.PlanetsLib
 end
+
+-- Get map generation settings for Dulcia
+local dulcia_map_settings = dulcia_map_gen.dulcia()
+
+-- Add surface properties to map gen settings
+dulcia_map_settings.property_expression_names["day-night-cycle"] = 5 * 60
+dulcia_map_settings.property_expression_names["magnetic-field"] = 40
+dulcia_map_settings.property_expression_names["solar-power"] = 200
+dulcia_map_settings.property_expression_names.pressure = 1500
+dulcia_map_settings.property_expression_names.gravity = 15
 
 PlanetsLib:extend({
   {
@@ -25,37 +36,7 @@ PlanetsLib:extend({
     magnitude = 0.9,
     order = "b[dulcia]",
     subgroup = "planets",
-    map_gen_settings = {
-      property_expression_names = {
-        ["day-night-cycle"] = 5 * 60,
-        ["magnetic-field"] = 40,
-        ["solar-power"] = 200,
-        pressure = 1500,
-        gravity = 15,
-      },
-      autoplace_controls = {
-        ["dulcium-ore"] = {},
-        ["saccharite-ore"] = {},
-        ["mint-oil"] = {},
-      },
-      autoplace_settings = {
-        ["tile"] = {
-          settings = {
-            ["grass-1"] = {}
-          }
-        },
-        ["decorative"] = {
-          settings = {}
-        },
-        ["entity"] = {
-          settings = {
-            ["dulcium-ore"] = {},
-            ["saccharite-ore"] = {},
-            ["mint-oil"] = {},
-          }
-        }
-      }
-    },
+    map_gen_settings = dulcia_map_settings,
     surface_properties = {
       ["day-night-cycle"] = 5 * 60,
       ["magnetic-field"] = 40,
