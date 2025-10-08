@@ -145,6 +145,7 @@ data:extend({
     name = "dulcium-ore",
     icon = "__base__/graphics/icons/iron-ore.png",
     icon_size = 64,
+    localised_name = {"", "[entity=dulcium-ore] ", {"entity-name.dulcium-ore"}},
     order = "b-dulcium",
     richness = true,
     category = "resource"
@@ -154,6 +155,7 @@ data:extend({
     name = "saccharite-ore",
     icon = "__base__/graphics/icons/copper-ore.png",
     icon_size = 64,
+    localised_name = {"", "[entity=saccharite-ore] ", {"entity-name.saccharite-ore"}},
     order = "b-saccharite",
     richness = true,
     category = "resource"
@@ -163,6 +165,7 @@ data:extend({
     name = "mint-oil",
     icon = "__base__/graphics/icons/crude-oil.png",
     icon_size = 64,
+    localised_name = {"", "[entity=mint-oil] ", {"entity-name.mint-oil"}},
     order = "b-mint",
     richness = true,
     category = "resource"
