@@ -1,111 +1,101 @@
+local noise = require("noise")
+local tne = noise.to_noise_expression
+
+local minimal_starting_lake_elevation_expression = noise.define_noise_function(function(_, _, _, map)
+  local vx = noise.var("x")
+  local vy = noise.var("y")
+  local starting_lake_distance = noise.distance_from(vx, vy, noise.var("starting_lake_positions"), tne(1024))
+  local minimal_starting_lake_depth = tne(6)
+  local lake_noise = tne{
+    type = "function-application",
+    function_name = "factorio-basis-noise",
+    arguments = {
+      x = vx / tne(8),
+      y = vy / tne(8),
+      seed0 = tne(map.seed),
+      seed1 = tne(733),
+      input_scale = noise.fraction(1, 8),
+      output_scale = tne(1.5)
+    }
+  }
+
+  return starting_lake_distance / tne(4) - minimal_starting_lake_depth + lake_noise
+end)
+
+local function finish_elevation(elevation, map)
+  elevation = noise.water_level_correct(elevation, map)
+  elevation = elevation / noise.var("segmentation_multiplier")
+  elevation = noise.min(elevation, minimal_starting_lake_elevation_expression)
+  return elevation
+end
+
+local dulcia_elevation_expression = noise.define_noise_function(function(_, _, _, map)
+  local vx = noise.var("x")
+  local vy = noise.var("y")
+  local segmentation = noise.var("segmentation_multiplier")
+  local map_seed = noise.var("map_seed")
+
+  local macro_noise = tne{
+    type = "function-application",
+    function_name = "factorio-basis-noise",
+    arguments = {
+      x = vx,
+      y = vy,
+      seed0 = tne(map_seed),
+      seed1 = tne(1205),
+      input_scale = segmentation / tne(180),
+      output_scale = tne(40)
+    }
+  }
+
+  local detail_noise = tne{
+    type = "function-application",
+    function_name = "factorio-basis-noise",
+    arguments = {
+      x = vx / tne(2),
+      y = vy / tne(2),
+      seed0 = tne(map_seed),
+      seed1 = tne(4211),
+      input_scale = segmentation / tne(80),
+      output_scale = tne(10)
+    }
+  }
+
+  local edge_falloff = (noise.abs(vx) + noise.abs(vy)) * noise.fraction(1, 4096) * tne(35)
+
+  local elevated = macro_noise + detail_noise + tne(38) - edge_falloff
+  return finish_elevation(elevated, map)
+end)
+
 local planet_map_gen = {}
 
 data:extend({
   {
     type = "noise-expression",
     name = "dulcia_elevation",
-    expression = [[
-      12 + multioctave_noise{
-        x = x,
-        y = y,
-        seed0 = map_seed,
-        seed1 = 1200,
-        octaves = 3,
-        persistence = 0.4,
-        input_scale = 1/1500,
-        output_scale = 10
-      }
-    ]]
+    intended_property = "elevation",
+    expression = dulcia_elevation_expression
   },
   {
     type = "noise-expression",
-    name = "dulcia_water_detail",
+    name = "dulcia_chocolate_water",
     expression = [[
-      multioctave_noise{
-        x = x,
-        y = y,
-        seed0 = map_seed,
-        seed1 = 5100,
-        octaves = 2,
-        persistence = 0.55,
-        input_scale = 1/480,
-        output_scale = 2
-      }
-    ]]
-  },
-  {
-    type = "noise-expression",
-    name = "dulcia_water_macro",
-    expression = [[
-      multioctave_noise{
-        x = x,
-        y = y,
-        seed0 = map_seed,
-        seed1 = 5200,
-        octaves = 3,
-        persistence = 0.58,
-        input_scale = 1/1600,
-        output_scale = 9
-      }
-    ]]
-  },
-  {
-    type = "noise-expression",
-    name = "dulcia_bridge_billows",
-    expression = [[
-      clamp(0.45 + 0.35 * multioctave_noise{
-        x = x,
-        y = y,
-        seed0 = map_seed,
-        seed1 = 5300,
-        octaves = 3,
-        persistence = 0.42,
-        input_scale = 1/260,
-        output_scale = 1.2
-      }, 0, 1)
-    ]]
-  },
-  {
-    type = "noise-expression",
-    name = "dulcia_water_plates",
-    expression = [[
-      clamp(0.35 + 0.25 * dulcia_bridge_billows + 0.15 * dulcia_water_macro, 0.28, 0.78)
-    ]]
-  },
-  {
-    type = "noise-expression",
-    name = "dulcia_water_elevation",
-    expression = [[
-      dulcia_elevation - (3 + 0.8 * dulcia_water_macro - 2.6 * dulcia_water_plates)
-    ]]
-  },
-  {
-    type = "noise-expression",
-    name = "dulcia_water_raw",
-    expression = [[
-      clamp((-6 - dulcia_water_elevation) / 7 + 0.12 * dulcia_water_detail, 0, 1)
-    ]]
-  },
-  {
-    type = "noise-expression",
-    name = "dulcia_water_total_bias",
-    expression = [[
-      0.5
+      clamp((6 - dulcia_elevation) / 28, 0, 1)
     ]]
   },
   {
     type = "noise-expression",
     name = "dulcia_water_probability",
     expression = [[
-      max(0,
-        dulcia_water_total_bias * dulcia_water_raw
-      )
+      dulcia_chocolate_water
     ]]
   },
   {
     type = "noise-expression",
     name = "dulcia_candy_medium_probability",
-    expression = "1"
+    expression = [[
+      clamp(1 - dulcia_chocolate_water + 0.2, 0, 1)
+    ]]
   },
   {
     type = "noise-expression",
