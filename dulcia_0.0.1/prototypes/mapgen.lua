@@ -34,20 +34,144 @@ data:extend({
     type = "noise-expression",
     name = "dulcia_stripe_pattern",
     expression = [[
-      0.5 + 0.5 * sin((x * 0.4 + y * 0.25) / 70)
+      clamp(0.5 + multioctave_noise{
+        x = x,
+        y = y,
+        seed0 = map_seed,
+        seed1 = 4100,
+        octaves = 4,
+        persistence = 0.55,
+        input_scale = 1/220,
+        output_scale = 0.6
+      }, 0, 1)
+    ]]
+  },
+  {
+    type = "noise-expression",
+    name = "dulcia_candy_macro",
+    expression = [[
+      clamp(0.5 + multioctave_noise{
+        x = x,
+        y = y,
+        seed0 = map_seed,
+        seed1 = 4200,
+        octaves = 3,
+        persistence = 0.45,
+        input_scale = 1/520,
+        output_scale = 0.55
+      }, 0, 1)
+    ]]
+  },
+  {
+    type = "noise-expression",
+    name = "dulcia_candy_blend",
+    expression = [[
+      clamp(0.35 + 0.5 * dulcia_stripe_pattern + 0.4 * dulcia_candy_macro + 0.15 * (dulcia_moisture - 0.5), 0, 1)
+    ]]
+  },
+  {
+    type = "noise-expression",
+    name = "dulcia_water_detail",
+    expression = [[
+      multioctave_noise{
+        x = x,
+        y = y,
+        seed0 = map_seed,
+        seed1 = 5100,
+        octaves = 2,
+        persistence = 0.55,
+        input_scale = 1/480,
+        output_scale = 2
+      }
+    ]]
+  },
+  {
+    type = "noise-expression",
+    name = "dulcia_water_macro",
+    expression = [[
+      multioctave_noise{
+        x = x,
+        y = y,
+        seed0 = map_seed,
+        seed1 = 5200,
+        octaves = 3,
+        persistence = 0.58,
+        input_scale = 1/1600,
+        output_scale = 9
+      }
+    ]]
+  },
+  {
+    type = "noise-expression",
+    name = "dulcia_bridge_billows",
+    expression = [[
+      clamp(0.45 + 0.35 * multioctave_noise{
+        x = x,
+        y = y,
+        seed0 = map_seed,
+        seed1 = 5300,
+        octaves = 3,
+        persistence = 0.42,
+        input_scale = 1/260,
+        output_scale = 1.2
+      }, 0, 1)
+    ]]
+  },
+  {
+    type = "noise-expression",
+    name = "dulcia_water_plates",
+    expression = [[
+      clamp(0.35 + 0.25 * dulcia_bridge_billows + 0.15 * dulcia_water_macro, 0.28, 0.78)
+    ]]
+  },
+  {
+    type = "noise-expression",
+    name = "dulcia_water_elevation",
+    expression = [[
+      dulcia_elevation - (3 + 0.8 * dulcia_water_macro - 2.6 * dulcia_water_plates)
+    ]]
+  },
+  {
+    type = "noise-expression",
+    name = "dulcia_deepwater_raw",
+    expression = [[
+      clamp((-14 - dulcia_water_elevation) / 10 + 0.08 * dulcia_water_detail, 0, 1)
+    ]]
+  },
+  {
+    type = "noise-expression",
+    name = "dulcia_water_raw",
+    expression = [[
+      clamp((-6 - dulcia_water_elevation) / 7 + 0.12 * dulcia_water_detail, 0, 1)
+    ]]
+  },
+  {
+    type = "noise-expression",
+    name = "dulcia_shallow_raw",
+    expression = [[
+      clamp((2 - dulcia_water_elevation) / 10 + 0.06 * dulcia_water_detail, 0, 1)
+    ]]
+  },
+  {
+    type = "noise-expression",
+    name = "dulcia_water_total_bias",
+    expression = [[
+      0.5
     ]]
   },
   {
     type = "noise-expression",
     name = "dulcia_deepwater_probability",
-    expression = "clamp((-5 - dulcia_elevation) / 15, 0, 1)"
+    expression = [[
+      max(0, dulcia_water_total_bias * dulcia_deepwater_raw)
+    ]]
   },
   {
     type = "noise-expression",
     name = "dulcia_water_probability",
     expression = [[
       max(0,
-        clamp((0 - dulcia_elevation) / 10, 0, 1) - dulcia_deepwater_probability
+        dulcia_water_total_bias * max(0, dulcia_water_raw - dulcia_deepwater_probability)
       )
     ]]
   },
@@ -56,8 +180,9 @@ data:extend({
     name = "dulcia_water_shallow_probability",
     expression = [[
       max(0,
-        clamp((8 - dulcia_elevation) / 8, 0, 1) -
-        dulcia_water_probability - dulcia_deepwater_probability
+        dulcia_water_total_bias * max(0,
+          dulcia_shallow_raw - dulcia_water_probability - dulcia_deepwater_probability
+        )
       )
     ]]
   },
@@ -65,7 +190,10 @@ data:extend({
     type = "noise-expression",
     name = "dulcia_candy_dark_probability",
     expression = [[
-      clamp((18 - dulcia_elevation) / 18, 0, 1) * (0.55 + 0.45 * dulcia_stripe_pattern)
+      max(0,
+        clamp((14 - dulcia_elevation) / 18, 0, 1)
+        * (0.45 + 0.55 * (1 - dulcia_candy_blend))
+      )
     ]]
   },
   {
@@ -73,15 +201,21 @@ data:extend({
     name = "dulcia_candy_medium_probability",
     expression = [[
       max(0,
-        clamp((dulcia_elevation - 4) / 20, 0, 1) -
-        clamp((dulcia_elevation - 36) / 20, 0, 1)
-      ) * (0.65 + 0.35 * (1 - dulcia_stripe_pattern))
+        (0.5 + 0.5 * dulcia_candy_blend)
+        * clamp((dulcia_elevation - 6) / 22, 0, 1)
+        * clamp((32 - dulcia_elevation) / 26, 0, 1)
+      )
     ]]
   },
   {
     type = "noise-expression",
     name = "dulcia_candy_light_probability",
-    expression = "clamp((dulcia_elevation - 32) / 18, 0, 1)"
+    expression = [[
+      max(0,
+        clamp((dulcia_elevation - 26) / 20, 0, 1)
+        * (0.45 + 0.55 * dulcia_candy_blend)
+      )
+    ]]
   },
   {
     type = "noise-expression",
@@ -161,7 +295,7 @@ planet_map_gen.dulcia = function()
       ["uranium-ore"] = {},
       ["crude-oil"] = {},
       ["trees"] = {},
-      ["enemy-base"] = {},
+      ["enemy-base"] = {frequency = "none", size = "none"},
       ["water"] = {},
       ["dulcium-ore"] = {},
       ["saccharite-ore"] = {},

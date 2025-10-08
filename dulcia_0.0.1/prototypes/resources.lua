@@ -143,7 +143,7 @@ data:extend({
   {
     type = "autoplace-control",
     name = "dulcium-ore",
-    icon = "__space-age__/graphics/icons/gleba.png",
+    icon = "__base__/graphics/icons/iron-ore.png",
     icon_size = 64,
     order = "b-dulcium",
     richness = true,
@@ -152,7 +152,7 @@ data:extend({
   {
     type = "autoplace-control",
     name = "saccharite-ore",
-    icon = "__space-age__/graphics/icons/gleba.png",
+    icon = "__base__/graphics/icons/copper-ore.png",
     icon_size = 64,
     order = "b-saccharite",
     richness = true,
@@ -161,7 +161,7 @@ data:extend({
   {
     type = "autoplace-control",
     name = "mint-oil",
-    icon = "__space-age__/graphics/icons/gleba.png",
+    icon = "__base__/graphics/icons/crude-oil.png",
     icon_size = 64,
     order = "b-mint",
     richness = true,
